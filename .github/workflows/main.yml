@@ -15,7 +15,7 @@ jobs:
 
       - name: Set up Python Path
         run: echo "PATH='C:/Users/fawaz/AppData/Local/Programs/Python/Python310/'" >> $GITHUB_ENV
-        shell: bash
+        shell: powershell
         
       - name: Verify Python Version
         run: python --version  # This step verifies the Python version
