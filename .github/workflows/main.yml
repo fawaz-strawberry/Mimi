@@ -1,4 +1,4 @@
-name: Run and Validate Python Script
+name: Run and Validate Python Script in Docker
 
 on:
   push:
@@ -9,24 +9,18 @@ jobs:
   run-and-validate:
     runs-on: self-hosted  # Specify that this job should run on your self-hosted runner
 
+    container:
+      image: docker://my-python-app  # Use the Docker image you built
+      env:
+        SOME_ENV_VAR: "some-value"  # Optionally, set some environment variables
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2  # This action checks out your repository so the runner can access your code
 
-      - name: Set up Python Path
-        run: |
-          $env:Path = "C:\Users\fawaz\AppData\Local\Programs\Python\Python310\"
-          echo "Path=$env:Path" | Out-File -FilePath $env:GITHUB_ENV -Append |
-          echo $env:GITHUB_ENV
-        shell: powershell
-
-        
-      - name: Verify Python Version
-        run: python --version  # This step verifies the Python version
-
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
+          pip install --upgrade pip
           # If you have any dependencies, install them here
 
       - name: Run script
