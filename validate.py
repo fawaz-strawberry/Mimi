@@ -6,3 +6,5 @@ with open("output.txt", "r") as file:
 # Validate the result
 expected_result = 35
 assert result == expected_result, f"Validation failed: expected {expected_result}, got {result}"
+
+print("Validation passed!")
