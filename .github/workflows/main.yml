@@ -9,11 +9,6 @@ jobs:
   run-and-validate:
     runs-on: self-hosted  # Specify that this job should run on your self-hosted runner
 
-    container:
-      image: docker://mimi  # Use the Docker image you built
-      env:
-        SOME_ENV_VAR: "some-value"  # Optionally, set some environment variables
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2  # This action checks out your repository so the runner can access your code
