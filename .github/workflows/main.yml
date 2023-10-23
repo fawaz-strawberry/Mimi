@@ -16,7 +16,8 @@ jobs:
       - name: Set up Python Path
         run: |
           $env:Path = "C:\Users\fawaz\AppData\Local\Programs\Python\Python310\"
-          echo "Path=$env:Path" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "Path=$env:Path" | Out-File -FilePath $env:GITHUB_ENV -Append |
+          echo $env:GITHUB_ENV
         shell: powershell
 
         
