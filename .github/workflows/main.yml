@@ -10,7 +10,7 @@ jobs:
     runs-on: self-hosted  # Specify that this job should run on your self-hosted runner
 
     container:
-      image: docker://my-python-app  # Use the Docker image you built
+      image: docker://mimi  # Use the Docker image you built
       env:
         SOME_ENV_VAR: "some-value"  # Optionally, set some environment variables
 
