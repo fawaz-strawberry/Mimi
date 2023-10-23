@@ -13,8 +13,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2  # This action checks out your repository so the runner can access your code
 
-      - name: Run Docker in WSL
-        run: wsl bash -c 'docker build -t mimi .'
+      - name: Set execute permissions on script
+        run: chmod +x run_commands.sh
         
-      - name: Run Docker for real
-        run: wsl bash -c "docker run mimi /bin/bash -c 'python script.py && python validate.py'"
+      - name: Run commands in WSL
+        run: wsl ./run_commands.sh
