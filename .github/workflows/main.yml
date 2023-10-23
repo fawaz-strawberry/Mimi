@@ -13,8 +13,5 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2  # This action checks out your repository so the runner can access your code
 
-      - name: Set execute permissions on script
-        run: chmod +x run_commands.sh
-        
       - name: Run commands in WSL
         run: wsl ./run_commands.sh
