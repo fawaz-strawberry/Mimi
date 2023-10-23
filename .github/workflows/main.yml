@@ -18,13 +18,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2  # This action checks out your repository so the runner can access your code
 
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          # If you have any dependencies, install them here
-
-      - name: Run script
-        run: python script.py  # Run your script
-
-      - name: Validate results
-        run: python validate.py  # Run your validation script
+      - name: Run Docker in WSL
+      run: |
+        wsl -e bash -c "
+          docker build -t mimi .
+          docker run mimi /bin/bash -c 'python script.py && python validate.py'
+        "
