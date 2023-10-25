@@ -1,4 +1,4 @@
-name: Run and Validate Python Script in Docker
+name: Python Script Validation Workflow
 
 on:
   push:
@@ -13,5 +13,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2  # This action checks out your repository so the runner can access your code
 
-      - name: Run commands in WSL
-        run: wsl ./run_commands.sh
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"  # Use Python 3.10 for this job
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          # If you have any dependencies, install them here
+
+      - name: Run script
+        run: python script.py  # Run your script
+
+      - name: Validate results
+        run: python validate.py  # Run your validation script
