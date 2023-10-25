@@ -14,14 +14,17 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install dependencies
+        shell: cmd
         run: |
-          & "C:/Users/fawaz/AppData/Local/Programs/Python/Python310/python.exe" -m pip install --upgrade pip
+          "C:\Users\fawaz\AppData\Local\Programs\Python\Python310\python.exe" -m pip install --upgrade pip
           # If you have any dependencies, install them here
 
       - name: Run script
+        shell: cmd
         run: |
-          & "C:/Users/fawaz/AppData/Local/Programs/Python/Python310/python.exe" script.py
+          "C:\Users\fawaz\AppData\Local\Programs\Python\Python310\python.exe" script.py
 
       - name: Validate results
+        shell: cmd
         run: |
-          & "C:/Users/fawaz/AppData/Local/Programs/Python/Python310/python.exe" validate.py
+          "C:\Users\fawaz\AppData\Local\Programs\Python\Python310\python.exe" validate.py
