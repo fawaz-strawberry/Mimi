@@ -12,14 +12,14 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2  # This action checks out your repository so the runner can access your code
-        
+
       - name: Install dependencies
         run: |
-          # C:Users/fawaz/AppData/Local/Programs/Python/Python310/python.exe -m pip install --upgrade pip
+          # C:/Users/fawaz/AppData/Local/Programs/Python/Python310/python.exe -m pip install --upgrade pip
           # If you have any dependencies, install them here
 
       - name: Run script
-        run: C:Users/fawaz/AppData/Local/Programs/Python/Python310/python.exe script.py  # Run your script
+        run: C:/Users/fawaz/AppData/Local/Programs/Python/Python310/python.exe script.py  # Run your script
 
       - name: Validate results
-        run: C:Users/fawaz/AppData/Local/Programs/Python/Python310/python.exe validate.py  # Run your validation script
+        run: C:/Users/fawaz/AppData/Local/Programs/Python/Python310/python.exe validate.py  # Run your validation script
