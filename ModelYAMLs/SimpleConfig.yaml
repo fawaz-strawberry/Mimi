@@ -1,0 +1,5 @@
+tokenizer:
+  type: "SimpleTokenizer"
+
+dataloader:
+  type: "SimpleTextDataset"
