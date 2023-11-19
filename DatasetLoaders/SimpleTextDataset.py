@@ -10,7 +10,7 @@ class SimpleTextDataset(AbstractDatasetLoader, Dataset):
                 self.chunks = f.readlines()
             else:
                 while True:
-                    chunk = f.read(chunk_size)
+                    chunk = f.read(chunk_size + 1)
                     if not chunk:
                         break  # eof
                     self.chunks.append(chunk)
@@ -19,4 +19,7 @@ class SimpleTextDataset(AbstractDatasetLoader, Dataset):
         return len(self.chunks)
     
     def __getitem__(self, idx):
-        return self.chunks[idx]
+        chunk = self.chunks[idx]
+        x = chunk[:-1]
+        y = chunk[1:]
+        return x, y

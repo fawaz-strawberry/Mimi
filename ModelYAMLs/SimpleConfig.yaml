@@ -1,14 +1,13 @@
-SimpleDecoder:
-  num_heads: 10
-  layers: 10
-  context_length: 256
-  tokenizer:
-    type: "SimpleTokenizer"
-  dataloader:
-    type: "SimpleTextDataset"
-  embedding_0:
-    type: "SimplePositionalEmbedding"
-  embedding_1:
-    type: "SimpleSemanticEmbedding"
-  model:
-    type: "SimpleDecoder"
+num_heads: 10
+layers: 10
+context_length: 256
+tokenizer:
+  type: "SimpleTokenizer"
+dataloader:
+  type: "SimpleTextDataset"
+embedding_0:
+  type: "SimplePositionalEmbedding"
+embedding_1:
+  type: "SimpleSemanticEmbedding"
+architecture:
+  type: "SimpleDecoder"

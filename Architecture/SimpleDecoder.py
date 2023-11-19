@@ -8,11 +8,7 @@ from .ArchitecturePieces.SimpleBlock import SimpleBlock
 class SimpleDecoder(AbstractArchitecture, nn.Module):
     def __init__(self, embed_size, vocab_size, heads, dropout):
         super().__init__()
-
-        self.blocks = nn.ModuleList([])
-        for i in range(6):
-            self.blocks.append(SimpleBlock(embed_size, heads, dropout))
-
+        self.blocks = nn.Sequential(*[SimpleBlock(embed_size=embed_size, heads=heads, dropout=dropout) for _ in range(6)])
         self.ln_out = nn.LayerNorm(embed_size)
         self.fc_out = nn.Linear(embed_size, vocab_size)
 

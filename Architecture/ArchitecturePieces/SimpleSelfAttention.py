@@ -15,11 +15,11 @@ class SelfAttention(nn.Module):
         self.heads = heads
         self.head_dim = embed_size // heads
 
-        assert (self.head_dim * heads == embed_size), "Embed size needs to be divisible by heads"
+        assert (self.head_dim * self.heads == embed_size), "Embed size needs to be divisible by heads"
 
-        self.query = nn.Linear(self.head_dim, self.head_dim, bias=False)
-        self.key = nn.Linear(self.head_dim, self.head_dim, bias=False)
-        self.value = nn.Linear(self.head_dim, self.head_dim, bias=False)
+        self.query = nn.Linear(self.embed_size, self.embed_size, bias=False)
+        self.key = nn.Linear(self.embed_size, self.embed_size, bias=False)
+        self.value = nn.Linear(self.embed_size, self.embed_size, bias=False)
         self.fc_out = nn.Linear(self.head_dim * heads, embed_size)
 
     '''
@@ -70,5 +70,7 @@ class SelfAttention(nn.Module):
 
         # Pass the x through the fc_out layer
         x = self.fc_out(x)
+
+        return x
         
 

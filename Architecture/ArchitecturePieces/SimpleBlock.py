@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-from SimpleSelfAttention import SelfAttention
+from .SimpleSelfAttention import SelfAttention
 
 class SimpleBlock(nn.Module):
     def __init__(self, embed_size, heads, dropout):
@@ -20,7 +20,7 @@ class SimpleBlock(nn.Module):
 
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x, mask):
+    def forward(self, x, mask=None):
 
         attention = self.attention(x, mask)
         x = self.ln1(attention + x)
