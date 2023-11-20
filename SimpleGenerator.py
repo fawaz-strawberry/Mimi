@@ -6,6 +6,7 @@ from Architecture.AbstractArchitecture import AbstractArchitecture
 import torch
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
+import os
 
 # Function to dynamically import a class from a module
 def dynamic_import(module, class_name):
@@ -23,6 +24,9 @@ dataloader_class_name = config['dataloader']['type']
 embedding_0_class_name = config['embedding_0']['type']
 embedding_1_class_name = config['embedding_1']['type']
 architecture_class_name = config['architecture']['type']
+
+tokenizer_file = config['tokenizer_filename']
+tokenized_data = config['tokenized_dataset']
 
 # Dynamically import the tokenizer class
 TokenizerClass = dynamic_import(f'Tokenizers.{tokenizer_class_name}', tokenizer_class_name)
@@ -54,13 +58,20 @@ embeding_size = 64
 heads = 4
 dropout = 0.1
 
-tokenizer = TokenizerClass()
-dataset = DatasetLoaderClass('datasets/iac_mini.txt', is_multi_line=False, chunk_size=context_len)
+# Check if the tokenizer file exists
+if tokenizer_file and os.path.isfile(tokenizer_file):
+    tokenizer = TokenizerClass(tokenizer_file)
+else:
+    tokenizer = TokenizerClass()
+
+# Check if the tokenized data file exists
+if tokenized_data and os.path.isfile(tokenized_data):
+    dataset = DatasetLoaderClass(tokenized_data, is_multi_line=False, context_len=context_len, tokenizer=tokenizer)
+else:
+    dataset = DatasetLoaderClass('datasets/iac_mini.txt', is_multi_line=False, context_len=context_len, tokenizer=tokenizer)
+
 dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 
-
-texts = dataset.chunks
-tokenizer.fit(texts)
 
 position_embedding = Embedding0Class(embeding_size, context_len)
 semantic_embedding = Embedding1Class(tokenizer.num_tokens, embeding_size)
@@ -74,41 +85,43 @@ print(f"Untokenized: {untokenized}")
 
 for batch in dataloader:
     
-    print(batch[:1])
-
-    # Tokenize the batch
-    x = tokenizer.tokenize(batch[0][0])
-    y = tokenizer.tokenize(batch[0][1])
-
-    # Create a tensor from the batch but also add a dimension for the batch size
-    batch = torch.tensor(x).unsqueeze(0)
-
-    print(batch.shape)
-
-    # Add padding to the batch
-    batch = torch.nn.functional.pad(batch, (0, context_len - batch.shape[1]), 'constant', 0)
-
-    # Run through the embeddings
-    position_embeddings = position_embedding(batch)
-    semantic_embeddings = semantic_embedding(batch)
-
-    # Add the embeddings together
-    embeddings = position_embeddings + semantic_embeddings
-
-    # Run through the model
-    output = model(embeddings)
-    print(output.shape)
-    print(output)
-    # Apply softmax on the vocab_size dimension
-    probabilities = F.softmax(output, dim=-1)
-    print(probabilities.shape)
-    
-    predicted_tokens = torch.argmax(probabilities, dim=-1)
-    print(predicted_tokens.shape)
-    print(predicted_tokens)
-    # Convert the predicted tokens to text after converting the tensor to a list
-    predicted_tokens = predicted_tokens.squeeze(0).tolist()
-    predicted_text = tokenizer.untokenize(predicted_tokens)
-    print(predicted_text)
-
+    print(batch[0][0])
     break
+
+
+    # # Tokenize the batch
+    # x = tokenizer.tokenize(batch[0][0])
+    # y = tokenizer.tokenize(batch[0][1])
+
+    # # Create a tensor from the batch but also add a dimension for the batch size
+    # batch = torch.tensor(x).unsqueeze(0)
+
+    # print(batch.shape)
+
+    # # Add padding to the batch
+    # batch = torch.nn.functional.pad(batch, (0, context_len - batch.shape[1]), 'constant', 0)
+
+    # # Run through the embeddings
+    # position_embeddings = position_embedding(batch)
+    # semantic_embeddings = semantic_embedding(batch)
+
+    # # Add the embeddings together
+    # embeddings = position_embeddings + semantic_embeddings
+
+    # # Run through the model
+    # output = model(embeddings)
+    # print(output.shape)
+    # print(output)
+    # # Apply softmax on the vocab_size dimension
+    # probabilities = F.softmax(output, dim=-1)
+    # print(probabilities.shape)
+    
+    # predicted_tokens = torch.argmax(probabilities, dim=-1)
+    # print(predicted_tokens.shape)
+    # print(predicted_tokens)
+    # # Convert the predicted tokens to text after converting the tensor to a list
+    # predicted_tokens = predicted_tokens.squeeze(0).tolist()
+    # predicted_text = tokenizer.untokenize(predicted_tokens)
+    # print(predicted_text)
+
+    # break

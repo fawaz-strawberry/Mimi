@@ -1,6 +1,8 @@
 num_heads: 10
 layers: 10
 context_length: 256
+tokenizer_filename: "token_to_id.pkl"
+tokenized_dataset: "tokenized_data.pkl"
 tokenizer:
   type: "SimpleTokenizer"
 dataloader:
