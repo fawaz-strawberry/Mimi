@@ -8,6 +8,8 @@ from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
 import os
 
+PRE_TRAIN = True
+
 # Function to dynamically import a class from a module
 def dynamic_import(module, class_name):
     module = __import__(module, fromlist=[class_name])
@@ -68,7 +70,7 @@ else:
 if tokenized_data and os.path.isfile(tokenized_data):
     dataset = DatasetLoaderClass(tokenized_data, is_multi_line=False, context_len=context_len, tokenizer=tokenizer)
 else:
-    dataset = DatasetLoaderClass('datasets/iac_mini.txt', is_multi_line=False, context_len=context_len, tokenizer=tokenizer)
+    dataset = DatasetLoaderClass('datasets/MEGA_SCRIPT.txt', is_multi_line=False, context_len=context_len, tokenizer=tokenizer)
 
 dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
 
@@ -83,36 +85,58 @@ print(f"Tokens: {tokens}")
 untokenized = tokenizer.untokenize(tokens)
 print(f"Untokenized: {untokenized}")
 
-for batch in dataloader:
+# Create optimizer
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
-    x = batch[0]
-    y = batch[1]
+train_count = 0
 
-    print(x.shape)
-    print(y.shape)
+# Create training loop
+for epoch in range(1):
 
-    # # # Add padding to the batch
-    # # batch = torch.nn.functional.pad(batch, (0, context_len - batch.shape[1]), 'constant', 0)
+    for batch in dataloader:
 
+        x, y = batch
 
-    semantic_embedding = semantic_embedding(x)
+        print(f"X shape: {x.shape}")
+        print(f"Y shape: {y.shape}")
 
-    final_embeddings = position_embedding(semantic_embedding)
+        semantic_embedding = semantic_embedding(x)
 
-    # Run through the model
-    output = model(final_embeddings)
-    print(output.shape)
-    print(output)
-    # Apply softmax on the vocab_size dimension
-    probabilities = F.softmax(output, dim=-1)
-    print(probabilities.shape)
-    
-    predicted_tokens = torch.argmax(probabilities, dim=-1)
-    print(predicted_tokens.shape)
-    print(predicted_tokens)
-    # Convert the predicted tokens to text after converting the tensor to a list
-    predicted_tokens = predicted_tokens[0].squeeze(0).tolist()
-    predicted_text = tokenizer.untokenize(predicted_tokens)
-    print(predicted_text)
+        final_embeddings = position_embedding(semantic_embedding)
 
-    break
+        # Run through the model
+        output = model(final_embeddings)
+        
+        if(PRE_TRAIN):
+            train_count += 1
+
+            # Calculate loss
+            loss = F.cross_entropy(output.view(-1, tokenizer.num_tokens), y.view(-1))
+            
+            # Backpropagate
+            loss.backward()
+
+            # Update parameters
+            optimizer.step()
+
+            # Zero out the gradients
+            optimizer.zero_grad()
+
+            # Print loss
+            if train_count % 100 == 0:
+                print(f"Loss: {loss}")
+
+        break
+
+# Print a sample of the next 30 tokens output based on some input
+sample_input = torch.tensor([[tokenizer.tokenize('This is a test about your mom')]])
+
+# Print sample input shape
+print(f"Sample input shape: {sample_input.shape}")
+
+for i in range(30):
+    x = semantic_embedding(sample_input)
+    x = position_embedding(x)
+    output = model(x)
+    next_token = torch.argmax(output[0, -1, :])
+    sample_input = torch.cat((sample_input, next_token.view(1, 1)), dim=1)

@@ -1,6 +1,6 @@
 num_heads: 10
 layers: 10
-context_length: 256
+context_length: 512
 tokenizer_filename: "token_to_id.pkl"
 tokenized_dataset: "tokenized_data.pkl"
 tokenizer:
