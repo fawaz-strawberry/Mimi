@@ -4,3 +4,4 @@ models/*
 *.pth
 *.pt
 **/__pycache__/
+**/*.pyc
