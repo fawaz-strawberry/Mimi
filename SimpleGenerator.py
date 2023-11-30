@@ -55,8 +55,8 @@ if not issubclass(ArchitectureClass, AbstractArchitecture):
 
 # Instantiate the tokenizer
 
-context_len = 64
-embeding_size = 64
+context_len = 4
+embeding_size = 4
 heads = 4
 dropout = 0.1
 
@@ -70,9 +70,9 @@ else:
 if tokenized_data and os.path.isfile(tokenized_data):
     dataset = DatasetLoaderClass(tokenized_data, is_multi_line=False, context_len=context_len, tokenizer=tokenizer)
 else:
-    dataset = DatasetLoaderClass('datasets/MEGA_SCRIPT.txt', is_multi_line=False, context_len=context_len, tokenizer=tokenizer)
+    dataset = DatasetLoaderClass('datasets/iac_mini.txt', is_multi_line=False, context_len=context_len, tokenizer=tokenizer)
 
-dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
+dataloader = DataLoader(dataset, batch_size=4, shuffle=True)
 
 
 position_embedding = Embedding0Class(embeding_size, context_len)
@@ -84,6 +84,27 @@ tokens = tokenizer.tokenize(text)
 print(f"Tokens: {tokens}")
 untokenized = tokenizer.untokenize(tokens)
 print(f"Untokenized: {untokenized}")
+
+def test_input():
+    # Print a sample of the next 30 tokens output based on some input
+    sample_input = torch.tensor([tokenizer.tokenize('This is a test about your mom')])
+
+    print("Sample Output: ", end="")
+
+    for i in range(30):
+        x = semantic_embedding(sample_input)
+        x = position_embedding(x)
+        output = model(x)
+        next_token = torch.argmax(output[0, -1, :])
+        # Untokenize the next token
+        nt = tokenizer.untokenize([next_token])
+        print(f"{nt}", end=" ")
+        # Add the next token to the sample input but remove the first token if the sample input would be longer than the context length
+        if sample_input.shape[1] >= context_len:
+            sample_input = sample_input[:, 1:]
+        sample_input = torch.cat((sample_input, torch.tensor([[next_token]])), dim=1)
+
+    print("\n")
 
 # Create optimizer
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
@@ -97,16 +118,32 @@ for epoch in range(1):
 
         x, y = batch
 
-        print(f"X shape: {x.shape}")
-        print(f"Y shape: {y.shape}")
+        # Create diagonal mask
+        mask = torch.eye(x.shape[1])
+        x = x + mask.unsqueeze(0).unsqueeze(0)
 
-        semantic_embedding = semantic_embedding(x)
+        # Print out the last two examples with their corresponding results
+        print("Input: ", end="")
+        for i in range(2):
+            print(f"{x[i]}", end=" ")
+        print("\n")
+        print("Output: ", end="")
+        for i in range(2):
+            print(f"{y[i]}", end=" ")
 
-        final_embeddings = position_embedding(semantic_embedding)
+        print(x.shape, y.shape)
+        # print last two examples
+
+        x = semantic_embedding(x)
+
+        x = position_embedding(x)
+
 
         # Run through the model
-        output = model(final_embeddings)
-        
+        output = model(x)
+    
+
+        break
         if(PRE_TRAIN):
             train_count += 1
 
@@ -123,20 +160,11 @@ for epoch in range(1):
             optimizer.zero_grad()
 
             # Print loss
+            if train_count % 10 == 0:
+                print(f"Loss: {loss} at {train_count} with lr={0.001/((train_count/100)+1)}")
+                optimizer = torch.optim.Adam(model.parameters(), lr=0.001/((train_count/100)+1))
+                test_input()
             if train_count % 100 == 0:
-                print(f"Loss: {loss}")
+                torch.save(model.state_dict(), f"models/model_{train_count}.pt")
 
-        break
 
-# Print a sample of the next 30 tokens output based on some input
-sample_input = torch.tensor([[tokenizer.tokenize('This is a test about your mom')]])
-
-# Print sample input shape
-print(f"Sample input shape: {sample_input.shape}")
-
-for i in range(30):
-    x = semantic_embedding(sample_input)
-    x = position_embedding(x)
-    output = model(x)
-    next_token = torch.argmax(output[0, -1, :])
-    sample_input = torch.cat((sample_input, next_token.view(1, 1)), dim=1)

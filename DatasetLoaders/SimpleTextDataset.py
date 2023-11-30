@@ -35,7 +35,9 @@ class SimpleTextDataset(AbstractDatasetLoader, Dataset):
 
             # Split the tokenized data into chunks of size context_len
             for i in range(0, len(tokenized_characters), self.context_len + 1):
-                self.chunks.append(tokenized_characters[i:i + self.context_len + 1])
+                my_chunk = tokenized_characters[i:i + self.context_len + 1]
+                if len(my_chunk) == self.context_len + 1:
+                    self.chunks.append(tokenized_characters[i:i + self.context_len + 1])
 
 
             # Save the tokenized data to a file

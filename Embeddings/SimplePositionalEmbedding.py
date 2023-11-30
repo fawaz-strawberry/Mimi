@@ -5,7 +5,7 @@ from .AbstractEmbedding import AbstractEmbedding
 max_context_len = 512
 # Create positional embeddings to let the model learn the value of positions
 class SimplePositionalEmbedding(AbstractEmbedding, nn.Module):
-    def __init__(self, embedding_size=512, max_len=512):
+    def __init__(self, batch_size=64, embedding_size=512, max_len=512):
         super(SimplePositionalEmbedding, self).__init__()
         
         # Create positional embeddings
@@ -22,6 +22,9 @@ class SimplePositionalEmbedding(AbstractEmbedding, nn.Module):
 
     # Add the positional embeddings to the input embeddings assuming the input embeddings are of shape (context_len, embedding_size)
     def forward(self, x):
+        # Repeat self.pe along the batch size dimension
+        pe = self.pe.repeat(x.size(0), 1, 1)
+
         # Add positional embeddings to the input embeddings
-        x = x + self.pe[:x.size(0), :]
+        x = x + pe[:x.size(1), :]
         return x
