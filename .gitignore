@@ -1,3 +1,6 @@
 datasets/*
 models/*
 *.pkl
+*.pth
+*.pt
+**/__pycache__/
