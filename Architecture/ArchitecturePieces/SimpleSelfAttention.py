@@ -46,7 +46,11 @@ class SelfAttention(nn.Module):
         key = key.view(batch_size, -1, self.heads, self.head_dim)
         value = value.view(batch_size, -1, self.heads, self.head_dim)
 
-        key = key.transpose(-2, -1)
+
+        key = key.transpose(-1, -2)
+
+        print(query.shape)
+        print(key.shape)
 
         # Matrix multiplication of query and key
         # Original shape of query: (batch_size, seq_length, heads, head_dim)
@@ -56,17 +60,21 @@ class SelfAttention(nn.Module):
 
         # Mask out the padded tokens
         if mask is not None:
-            attention_scores = attention_scores.masked_fill(mask == 0, float("-inf"))
+            # Expand the dimensions of the mask tensor to [batch_size, context_len, heads, heads_dim]
+            print(mask.shape)
+            print(attention_scores.shape)
+            # Apply the mask across the heads
+            attention_scores = attention_scores.masked_fill(mask == 1, float("-inf"))
 
         # Softmax the attention scores
         attention = torch.softmax(attention_scores, dim=-1)
-
         # Multiply the attention scores with the value
         x = torch.matmul(attention, value)
 
         # Reshape the x
         x = x.transpose(1, 2).contiguous()
         x = x.view(batch_size, -1, self.heads * self.head_dim)
+
 
         # Pass the x through the fc_out layer
         x = self.fc_out(x)

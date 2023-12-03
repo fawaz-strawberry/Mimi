@@ -14,7 +14,10 @@ class SimpleDecoder(AbstractArchitecture, nn.Module):
 
 
     def forward(self, x):
-        x = self.blocks(x)
+        # Create a diagnal mask to pass to the blocks
+        mask = torch.triu(torch.ones(x.shape[1], x.shape[1]), diagonal=1)
+        for block in self.blocks:
+            x = block(x, mask)
         x = self.ln_out(x)
         x = self.fc_out(x)
         return x

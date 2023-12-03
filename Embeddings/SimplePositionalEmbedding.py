@@ -22,9 +22,14 @@ class SimplePositionalEmbedding(AbstractEmbedding, nn.Module):
 
     # Add the positional embeddings to the input embeddings assuming the input embeddings are of shape (context_len, embedding_size)
     def forward(self, x):
+        # x is expected to have shape [batch_size, context_len, embedding_size]
+        batch_size, context_len, _ = x.shape
+
         # Repeat self.pe along the batch size dimension
-        pe = self.pe.repeat(x.size(0), 1, 1)
+        # Adjusting shape to [batch_size, context_len, embedding_size]
+        pe = self.pe.repeat(1, batch_size, 1).transpose(0, 1)
 
         # Add positional embeddings to the input embeddings
-        x = x + pe[:x.size(1), :]
+        x = x + pe[:, :context_len, :]
         return x
+

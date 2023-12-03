@@ -55,9 +55,10 @@ if not issubclass(ArchitectureClass, AbstractArchitecture):
 
 # Instantiate the tokenizer
 
-context_len = 4
-embeding_size = 4
-heads = 4
+BATCH_SIZE = 32
+context_len = 128
+embeding_size = 512
+heads = 8
 dropout = 0.1
 
 # Check if the tokenizer file exists
@@ -70,12 +71,12 @@ else:
 if tokenized_data and os.path.isfile(tokenized_data):
     dataset = DatasetLoaderClass(tokenized_data, is_multi_line=False, context_len=context_len, tokenizer=tokenizer)
 else:
-    dataset = DatasetLoaderClass('datasets/iac_mini.txt', is_multi_line=False, context_len=context_len, tokenizer=tokenizer)
+    dataset = DatasetLoaderClass('datasets/shakespeare.txt', is_multi_line=False, context_len=context_len, tokenizer=tokenizer)
 
-dataloader = DataLoader(dataset, batch_size=4, shuffle=True)
+dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 
-position_embedding = Embedding0Class(embeding_size, context_len)
+position_embedding = Embedding0Class(BATCH_SIZE, embeding_size, context_len)
 semantic_embedding = Embedding1Class(tokenizer.num_tokens, embeding_size)
 model = ArchitectureClass(embeding_size, tokenizer.num_tokens, heads, dropout)
 
@@ -87,9 +88,8 @@ print(f"Untokenized: {untokenized}")
 
 def test_input():
     # Print a sample of the next 30 tokens output based on some input
-    sample_input = torch.tensor([tokenizer.tokenize('This is a test about your mom')])
+    sample_input = torch.tensor([tokenizer.tokenize('This is a test')])
 
-    print("Sample Output: ", end="")
 
     for i in range(30):
         x = semantic_embedding(sample_input)
@@ -117,54 +117,56 @@ for epoch in range(1):
     for batch in dataloader:
 
         x, y = batch
-
-        # Create diagonal mask
-        mask = torch.eye(x.shape[1])
-        x = x + mask.unsqueeze(0).unsqueeze(0)
-
-        # Print out the last two examples with their corresponding results
-        print("Input: ", end="")
-        for i in range(2):
-            print(f"{x[i]}", end=" ")
-        print("\n")
-        print("Output: ", end="")
-        for i in range(2):
-            print(f"{y[i]}", end=" ")
-
-        print(x.shape, y.shape)
-        # print last two examples
+        # print("Inputs ", end="")
+        # print(x)
+        # print(x.shape)
+        # print("Outputs ", end="")
+        # print(y)
+        # print(y.shape)
 
         x = semantic_embedding(x)
 
+        # print("Post Semantic Embedding ", end="")
+        # print(x)
+        # print(x.shape)
+
         x = position_embedding(x)
 
+        # print("Post Position Embedding ", end="")
+        # print(x)
+        # print(x.shape)
 
         # Run through the model
         output = model(x)
-    
 
-        break
-        if(PRE_TRAIN):
-            train_count += 1
+        # print("Output ", end="")
+        # print(output)
+        # print(output.shape)
+        # print("Target ", end="")
+        # print(y)
+        # print(y.shape)
 
-            # Calculate loss
-            loss = F.cross_entropy(output.view(-1, tokenizer.num_tokens), y.view(-1))
-            
-            # Backpropagate
-            loss.backward()
+        # Calculate loss
+        loss = F.cross_entropy(output.view(-1, tokenizer.num_tokens), y.view(-1))
 
-            # Update parameters
-            optimizer.step()
+        # Backpropagate
+        loss.backward()
 
-            # Zero out the gradients
-            optimizer.zero_grad()
+        # Update parameters
+        optimizer.step()
 
-            # Print loss
-            if train_count % 10 == 0:
-                print(f"Loss: {loss} at {train_count} with lr={0.001/((train_count/100)+1)}")
-                optimizer = torch.optim.Adam(model.parameters(), lr=0.001/((train_count/100)+1))
-                test_input()
-            if train_count % 100 == 0:
-                torch.save(model.state_dict(), f"models/model_{train_count}.pt")
+        # Zero out the gradients
+        optimizer.zero_grad()
+
+        # Print loss
+        if train_count % 10 == 0:
+            print(f"Loss: {loss} at {train_count} with lr={0.001/((train_count/100)+1)}")
+            optimizer = torch.optim.Adam(model.parameters(), lr=0.001/((train_count/100)+1))
+            test_input()
+        if train_count % 100 == 0 and train_count != 0:
+            torch.save(model.state_dict(), f"models/model_{train_count}.pt")
+
+        train_count += 1
+
 
 
