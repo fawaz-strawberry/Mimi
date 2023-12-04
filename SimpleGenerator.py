@@ -55,9 +55,9 @@ if not issubclass(ArchitectureClass, AbstractArchitecture):
 
 # Instantiate the tokenizer
 
-BATCH_SIZE = 32
-context_len = 128
-embeding_size = 512
+BATCH_SIZE = 64
+context_len = 64
+embeding_size = 256
 heads = 8
 dropout = 0.1
 
@@ -167,6 +167,5 @@ for epoch in range(1):
             torch.save(model.state_dict(), f"models/model_{train_count}.pt")
 
         train_count += 1
-
 
 

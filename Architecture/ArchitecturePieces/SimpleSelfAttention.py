@@ -42,15 +42,15 @@ class SelfAttention(nn.Module):
         # Split the embed_size into heads
         # Original shape: (batch_size, seq_length, embed_size)
         # New shape: (batch_size, seq_length, heads, head_dim)
-        query = query.view(batch_size, -1, self.heads, self.head_dim)
-        key = key.view(batch_size, -1, self.heads, self.head_dim)
-        value = value.view(batch_size, -1, self.heads, self.head_dim)
+        query = query.view(batch_size, -1, self.heads, self.head_dim).transpose(1, 2)
+        key = key.view(batch_size, -1, self.heads, self.head_dim).transpose(1, 2)
+        value = value.view(batch_size, -1, self.heads, self.head_dim).transpose(1, 2)
 
 
         key = key.transpose(-1, -2)
 
-        print(query.shape)
-        print(key.shape)
+        # print(query.shape)
+        # print(key.shape)
 
         # Matrix multiplication of query and key
         # Original shape of query: (batch_size, seq_length, heads, head_dim)
@@ -61,8 +61,6 @@ class SelfAttention(nn.Module):
         # Mask out the padded tokens
         if mask is not None:
             # Expand the dimensions of the mask tensor to [batch_size, context_len, heads, heads_dim]
-            print(mask.shape)
-            print(attention_scores.shape)
             # Apply the mask across the heads
             attention_scores = attention_scores.masked_fill(mask == 1, float("-inf"))
 
