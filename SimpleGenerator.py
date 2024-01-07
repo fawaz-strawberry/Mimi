@@ -117,34 +117,10 @@ for epoch in range(1):
     for batch in dataloader:
 
         x, y = batch
-        # print("Inputs ", end="")
-        # print(x)
-        # print(x.shape)
-        # print("Outputs ", end="")
-        # print(y)
-        # print(y.shape)
 
         x = semantic_embedding(x)
-
-        # print("Post Semantic Embedding ", end="")
-        # print(x)
-        # print(x.shape)
-
         x = position_embedding(x)
-
-        # print("Post Position Embedding ", end="")
-        # print(x)
-        # print(x.shape)
-
-        # Run through the model
         output = model(x)
-
-        # print("Output ", end="")
-        # print(output)
-        # print(output.shape)
-        # print("Target ", end="")
-        # print(y)
-        # print(y.shape)
 
         # Calculate loss
         loss = F.cross_entropy(output.view(-1, tokenizer.num_tokens), y.view(-1))
@@ -167,5 +143,3 @@ for epoch in range(1):
             torch.save(model.state_dict(), f"models/model_{train_count}.pt")
 
         train_count += 1
-
-
