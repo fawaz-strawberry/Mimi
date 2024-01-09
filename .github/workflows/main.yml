@@ -1,39 +1,21 @@
-name: Python Script Validation Workflow
+name: Python package
 
-on:
-  push:
-    branches:
-      - main
+on: [push]
 
 jobs:
-  run-and-validate:
+  build:
+
     runs-on: self-hosted
+    strategy:
+      matrix:
+        python-version: ["3.10"]
 
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v2
-
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.10"
-        architecture: "x64"
-      env:
-        AGENT_TOOLSDIRECTORY: /opt/hostedtoolcache
-
-    - name: Install Pipenv
-      run: |
-        python -m pip install --upgrade pip
-        pip install pipenv
-
-    - name: Install dependencies with Pipenv
-      run: |
-        pipenv install --dev
-
-    - name: Run script.py using Pipenv
-      run: |
-        pipenv run python script.py
-
-    - name: Run validate.py using Pipenv
-      run: |
-        pipenv run python validate.py
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      # You can test your matrix by printing the current Python version
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
