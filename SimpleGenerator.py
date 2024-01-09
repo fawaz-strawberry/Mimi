@@ -8,7 +8,8 @@ from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
 import os
 
-PRE_TRAIN = True
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print("My device is: " + str(device))
 
 # Function to dynamically import a class from a module
 def dynamic_import(module, class_name):
@@ -77,8 +78,12 @@ dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 
 position_embedding = Embedding0Class(BATCH_SIZE, embeding_size, context_len)
-semantic_embedding = Embedding1Class(tokenizer.num_tokens, embeding_size)
-model = ArchitectureClass(embeding_size, tokenizer.num_tokens, heads, dropout)
+semantic_embedding = Embedding1Class(tokenizer.num_tokens, embeding_size, device)
+model = ArchitectureClass(embeding_size, tokenizer.num_tokens, heads, dropout, device)
+
+model = model.to(device)
+position_embedding = position_embedding.to(device)
+semantic_embedding = semantic_embedding.to(device)
 
 text = "Hello, World!"
 tokens = tokenizer.tokenize(text)
@@ -88,7 +93,7 @@ print(f"Untokenized: {untokenized}")
 
 def test_input():
     # Print a sample of the next 30 tokens output based on some input
-    sample_input = torch.tensor([tokenizer.tokenize('This is a test')])
+    sample_input = torch.tensor([tokenizer.tokenize('This is a test')]).to(device)
 
 
     for i in range(30):
@@ -102,7 +107,7 @@ def test_input():
         # Add the next token to the sample input but remove the first token if the sample input would be longer than the context length
         if sample_input.shape[1] >= context_len:
             sample_input = sample_input[:, 1:]
-        sample_input = torch.cat((sample_input, torch.tensor([[next_token]])), dim=1)
+        sample_input = torch.cat((sample_input, torch.tensor([[next_token]]).to(device)), dim=1)
 
     print("\n")
 
@@ -111,12 +116,17 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 train_count = 0
 
+
+
 # Create training loop
-for epoch in range(1):
+for epoch in range(10):
 
     for batch in dataloader:
 
         x, y = batch
+
+        x = x.to(device)
+        y = y.to(device)
 
         x = semantic_embedding(x)
         x = position_embedding(x)

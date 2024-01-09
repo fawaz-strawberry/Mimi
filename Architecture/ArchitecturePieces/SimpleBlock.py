@@ -4,18 +4,18 @@ import torch.nn as nn
 from .SimpleSelfAttention import SelfAttention
 
 class SimpleBlock(nn.Module):
-    def __init__(self, embed_size, heads, dropout):
+    def __init__(self, embed_size, heads, dropout, device):
         super(SimpleBlock, self).__init__()
 
 
-        self.attention = SelfAttention(embed_size, heads)
+        self.attention = SelfAttention(embed_size, heads, device)
         self.ln1 = nn.LayerNorm(embed_size)
         self.ln2 = nn.LayerNorm(embed_size)
 
         self.mlp = nn.Sequential(
-            nn.Linear(embed_size, embed_size * 4),
+            nn.Linear(embed_size, embed_size * 4).to(device),
             nn.ReLU(),
-            nn.Linear(embed_size * 4, embed_size)
+            nn.Linear(embed_size * 4, embed_size).to(device)
         )
 
         self.dropout = nn.Dropout(dropout)

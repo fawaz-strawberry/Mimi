@@ -3,7 +3,7 @@ import torch.nn as nn
 import math
 
 class SelfAttention(nn.Module):
-    def __init__(self, embed_size, heads):
+    def __init__(self, embed_size, heads, device):
         super(SelfAttention, self).__init__()
 
         '''
@@ -17,10 +17,10 @@ class SelfAttention(nn.Module):
 
         assert (self.head_dim * self.heads == embed_size), "Embed size needs to be divisible by heads"
 
-        self.query = nn.Linear(self.embed_size, self.embed_size, bias=False)
-        self.key = nn.Linear(self.embed_size, self.embed_size, bias=False)
-        self.value = nn.Linear(self.embed_size, self.embed_size, bias=False)
-        self.fc_out = nn.Linear(self.head_dim * heads, embed_size)
+        self.query = nn.Linear(self.embed_size, self.embed_size, bias=False).to(device)
+        self.key = nn.Linear(self.embed_size, self.embed_size, bias=False).to(device)
+        self.value = nn.Linear(self.embed_size, self.embed_size, bias=False).to(device)
+        self.fc_out = nn.Linear(self.head_dim * heads, embed_size).to(device)
 
     '''
     query: input to the query linear layer
