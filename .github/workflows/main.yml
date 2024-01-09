@@ -10,21 +10,21 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+        - name: Check out repository
+          uses: actions/checkout@v2
 
-      - name: Install dependencies
-        shell: cmd
-        run: |
-          "C:\Users\fawaz\AppData\Local\Programs\Python\Python310\python.exe" -m pip install --upgrade pip
-          # If you have any dependencies, install them here
+        - name: Set up Python
+          uses: actions/setup-python@v2
+          with:
+            python-version: '3.x'
 
-      - name: Run script
-        shell: cmd
-        run: |
-          "C:\Users\fawaz\AppData\Local\Programs\Python\Python310\python.exe" script.py
+        - name: Install dependencies
+          run: |
+            # If you have any dependencies, install them here
+            # pip install -r requirements.txt
 
-      - name: Validate results
-        shell: cmd
-        run: |
-          "C:\Users\fawaz\AppData\Local\Programs\Python\Python310\python.exe" validate.py
+        - name: Run script.py
+          run: python script.py
+
+        - name: Run validate.py
+          run: python validate.py
