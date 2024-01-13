@@ -1,12 +1,13 @@
 import re
+import os
 import pickle
 from .AbstractTokenizer import AbstractTokenizer
 
 class SimpleTokenizer(AbstractTokenizer):
-    def __init__(self, filename=None):
+    def __init__(self, file_path=None):
         super().__init__() 
-        if filename:
-            tokens_to_id = pickle.load(open(filename, 'rb'))
+        if file_path and os.path.isfile(file_path):
+            tokens_to_id = pickle.load(open(file_path, 'rb'))
             self.token_to_id = tokens_to_id
             self.num_tokens = len(tokens_to_id)
             self.isTokenized = True
@@ -18,7 +19,7 @@ class SimpleTokenizer(AbstractTokenizer):
         print("Tokenizer initialized")
     
     # Fit the tokenizer onto the dataset
-    def fit(self, texts):
+    def fit(self, model_name, texts):
         i = 0
         for word in re.findall(r'\w+', texts):
             if word not in self.token_to_id:
@@ -29,7 +30,7 @@ class SimpleTokenizer(AbstractTokenizer):
         print(f"Sample Tokens: {list(self.token_to_id.keys())[:10]}")
 
         # Save tokenizer to file for later use with date generation
-        with open('token_to_id.pkl', 'wb') as f:
+        with open('Pickels/' + model_name + '/token_to_id.pkl', 'wb') as f:
             pickle.dump(self.token_to_id, f)
 
         self.isTokenized = True

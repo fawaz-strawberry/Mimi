@@ -1,6 +1,10 @@
-num_heads: 10
+model_identifier: "SimpleTransformer" 
+num_heads: 8
 layers: 10
-context_length: 512
+batch_size: 64
+context_length: 64
+embedding_size: 256
+dropout: 0.1
 tokenizer_filename: "token_to_id.pkl"
 tokenized_dataset: "tokenized_data.pkl"
 tokenizer:

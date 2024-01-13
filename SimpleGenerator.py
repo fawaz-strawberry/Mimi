@@ -1,85 +1,35 @@
-import yaml
-from Tokenizers.AbstractTokenizer import AbstractTokenizer
-from DatasetLoaders.AbstractDatasetLoader import AbstractDatasetLoader
-from Embeddings.AbstractEmbedding import AbstractEmbedding
-from Architecture.AbstractArchitecture import AbstractArchitecture
 import torch
 from torch.utils.data import Dataset, DataLoader
 import torch.nn.functional as F
 import os
+import time
+from ImportAndValidate_Classic import TokenizerClass, DatasetLoaderClass, Embedding0Class, \
+    Embedding1Class, ArchitectureClass, tokenizer_file, tokenized_data, BATCH_SIZE, CONTEXT_LEN, \
+    EMBEDDING_SIZE, HEADS, DROPOUT, MODEL_NAME
+
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("My device is: " + str(device))
 
-# Function to dynamically import a class from a module
-def dynamic_import(module, class_name):
-    module = __import__(module, fromlist=[class_name])
-    return getattr(module, class_name)
-
-# Load configuration
-with open('ModelYAMLs/SimpleConfig.yaml', 'r') as file:
-    config = yaml.safe_load(file)
-
-# Get the tokenizer class from the configuration
-tokenizer_class_name = config['tokenizer']['type']
-# tokenizer_params = config['tokenizer'].get('params', {})
-dataloader_class_name = config['dataloader']['type']
-embedding_0_class_name = config['embedding_0']['type']
-embedding_1_class_name = config['embedding_1']['type']
-architecture_class_name = config['architecture']['type']
-
-tokenizer_file = config['tokenizer_filename']
-tokenized_data = config['tokenized_dataset']
-
-# Dynamically import the tokenizer class
-TokenizerClass = dynamic_import(f'Tokenizers.{tokenizer_class_name}', tokenizer_class_name)
-DatasetLoaderClass = dynamic_import(f'DatasetLoaders.{dataloader_class_name}', dataloader_class_name)
-Embedding0Class = dynamic_import(f'Embeddings.{embedding_0_class_name}', embedding_0_class_name)
-Embedding1Class = dynamic_import(f'Embeddings.{embedding_1_class_name}', embedding_1_class_name)
-ArchitectureClass = dynamic_import(f'Architecture.{architecture_class_name}', architecture_class_name)
-
-# Check if the class is a subclass of AbstractTokenizer
-if not issubclass(TokenizerClass, AbstractTokenizer):
-    raise ValueError(f"{tokenizer_class_name} is not a valid Tokenizer")
-
-if not issubclass(DatasetLoaderClass, AbstractDatasetLoader):
-    raise ValueError(f"{dataloader_class_name} is not a valid DataLoader")
-
-if not issubclass(Embedding0Class, AbstractEmbedding):
-    raise ValueError(f"{embedding_0_class_name} is not a valid Embedding")
-
-if not issubclass(Embedding1Class, AbstractEmbedding):
-    raise ValueError(f"{embedding_1_class_name} is not a valid Embedding")
-
-if not issubclass(ArchitectureClass, AbstractArchitecture):
-    raise ValueError(f"{architecture_class_name} is not a valid Architecture")
-
-# Instantiate the tokenizer
-
-BATCH_SIZE = 64
-context_len = 64
-embeding_size = 256
-heads = 8
-dropout = 0.1
-
 # Check if the tokenizer file exists
+tokenizer_file = "Pickels/" + MODEL_NAME + "/" + tokenizer_file
 if tokenizer_file and os.path.isfile(tokenizer_file):
     tokenizer = TokenizerClass(tokenizer_file)
 else:
-    tokenizer = TokenizerClass()
+    tokenizer = TokenizerClass() 
 
 # Check if the tokenized data file exists
 if tokenized_data and os.path.isfile(tokenized_data):
-    dataset = DatasetLoaderClass(tokenized_data, is_multi_line=False, context_len=context_len, tokenizer=tokenizer)
+    dataset = DatasetLoaderClass(MODEL_NAME, tokenized_data, is_multi_line=False, context_len=CONTEXT_LEN, tokenizer=tokenizer)
 else:
-    dataset = DatasetLoaderClass('datasets/shakespeare.txt', is_multi_line=False, context_len=context_len, tokenizer=tokenizer)
+    dataset = DatasetLoaderClass(MODEL_NAME, 'shakespeare.txt', is_multi_line=False, context_len=CONTEXT_LEN, tokenizer=tokenizer)
 
 dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 
-position_embedding = Embedding0Class(BATCH_SIZE, embeding_size, context_len)
-semantic_embedding = Embedding1Class(tokenizer.num_tokens, embeding_size, device)
-model = ArchitectureClass(embeding_size, tokenizer.num_tokens, heads, dropout, device)
+position_embedding = Embedding0Class(BATCH_SIZE, EMBEDDING_SIZE, CONTEXT_LEN)
+semantic_embedding = Embedding1Class(tokenizer.num_tokens, EMBEDDING_SIZE, device)
+model = ArchitectureClass(EMBEDDING_SIZE, tokenizer.num_tokens, HEADS, DROPOUT, device)
 
 model = model.to(device)
 position_embedding = position_embedding.to(device)
@@ -105,19 +55,18 @@ def test_input():
         nt = tokenizer.untokenize([next_token])
         print(f"{nt}", end=" ")
         # Add the next token to the sample input but remove the first token if the sample input would be longer than the context length
-        if sample_input.shape[1] >= context_len:
+        if sample_input.shape[1] >= CONTEXT_LEN:
             sample_input = sample_input[:, 1:]
         sample_input = torch.cat((sample_input, torch.tensor([[next_token]]).to(device)), dim=1)
 
     print("\n")
 
 # Create optimizer
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
 train_count = 0
 
-
-
+train_start_time = int(time.time())
 # Create training loop
 for epoch in range(10):
 
@@ -146,10 +95,11 @@ for epoch in range(10):
 
         # Print loss
         if train_count % 10 == 0:
-            print(f"Loss: {loss} at {train_count} with lr={0.001/((train_count/100)+1)}")
-            optimizer = torch.optim.Adam(model.parameters(), lr=0.001/((train_count/100)+1))
+            print(f"Loss: {loss} at {train_count} with lr={0.0001/((train_count/100)+1)}")
+            optimizer = torch.optim.Adam(model.parameters(), lr=0.0001/((train_count/100)+1))
             test_input()
         if train_count % 100 == 0 and train_count != 0:
-            torch.save(model.state_dict(), f"models/model_{train_count}.pt")
+            os.makedirs("Checkpoints/" + MODEL_NAME, exist_ok=True)
+            torch.save(model.state_dict(), f"Checkpoints/{MODEL_NAME}/{MODEL_NAME}_{train_start_time}_{train_count}.pt")
 
         train_count += 1

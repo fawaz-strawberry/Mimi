@@ -1,5 +1,6 @@
-datasets/*
-models/*
+Datasets/*
+Checkpoints/*
+Pickels/*
 *.pkl
 *.pth
 *.pt

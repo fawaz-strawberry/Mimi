@@ -1,10 +1,11 @@
+import os
 import torch
 import pickle
 from torch.utils.data import Dataset, DataLoader
 from .AbstractDatasetLoader import AbstractDatasetLoader
 
 class SimpleTextDataset(AbstractDatasetLoader, Dataset):
-    def __init__(self, filename, is_multi_line=True, context_len=1024, tokenizer=None):
+    def __init__(self, model_name, filename, is_multi_line=True, context_len=1024, tokenizer=None):
         
         self.tokenizer = tokenizer
         self.context_len = context_len
@@ -12,16 +13,16 @@ class SimpleTextDataset(AbstractDatasetLoader, Dataset):
         self.data = []
         self.chunks = []
 
-        # check if filetype is a pickle file and if so, load it as a list into self.chunks
-        if filename.endswith('.pkl'):
+        file_path = 'Pickels/' + model_name + '/tokenized_data.pkl'
+        if file_path.endswith('.pkl') and os.path.isfile(file_path):
             print("Loading tokenized data from pickle file 🥒")
-            self.chunks = pickle.load(open(filename, 'rb'))
+            self.chunks = pickle.load(open(file_path, 'rb'))
         else:
         # Read the file and add everything to the data list in one string into self.data
         # Then run the tokenizer on the data converting it to a list of tokens in self.chunks
         # with chunk size of chunk_size
             print("Loading data from text file 📄")
-            with open(filename, 'r') as f:
+            with open('Datasets/' + filename, 'r') as f:
                 if is_multi_line:
                     self.data = f.readlines()
                 else:
@@ -30,7 +31,7 @@ class SimpleTextDataset(AbstractDatasetLoader, Dataset):
             # Print sample data
             print(f"Sample Data: {self.data[:100]}")
 
-            tokenizer.fit(self.data)
+            tokenizer.fit(model_name, self.data)
             tokenized_characters = tokenizer.tokenize(self.data)
 
             # Split the tokenized data into chunks of size context_len
@@ -41,7 +42,8 @@ class SimpleTextDataset(AbstractDatasetLoader, Dataset):
 
 
             # Save the tokenized data to a file
-            with open('tokenized_data.pkl', 'wb') as f:
+            os.makedirs("Pickels/" + model_name, exist_ok=True)   
+            with open(file_path, 'wb') as f:
                 pickle.dump(self.chunks, f)
 
     def __len__(self):
