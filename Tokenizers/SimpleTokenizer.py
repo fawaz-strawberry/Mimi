@@ -30,6 +30,7 @@ class SimpleTokenizer(AbstractTokenizer):
         print(f"Sample Tokens: {list(self.token_to_id.keys())[:10]}")
 
         # Save tokenizer to file for later use with date generation
+        os.makedirs("Pickels/" + model_name, exist_ok=True)
         with open('Pickels/' + model_name + '/token_to_id.pkl', 'wb') as f:
             pickle.dump(self.token_to_id, f)
 

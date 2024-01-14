@@ -22,12 +22,12 @@ class SimpleBlock(nn.Module):
 
     def forward(self, x, mask=None):
 
-        attention = self.attention(x, mask)
-        x = self.ln1(attention + x)
+        
+        x = self.ln1(x)
+        x = x + self.attention(x, mask)
         x = self.dropout(x)
-
-        mlp = self.mlp(x)
-        x = self.ln2(mlp + x)
+        x = self.ln2(x)
+        x = x + self.mlp(x)
         x = self.dropout(x)
 
         return x

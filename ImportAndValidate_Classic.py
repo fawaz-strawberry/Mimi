@@ -55,3 +55,7 @@ CONTEXT_LEN = config["context_length"]
 EMBEDDING_SIZE = config["embedding_size"]
 HEADS = config["num_heads"]
 DROPOUT = config["dropout"]
+LEARNING_RATE = config["learning_rate"]
+LR_DECAY = config["lr_decay"]
+EPOCHS = config["num_epochs"]
+
