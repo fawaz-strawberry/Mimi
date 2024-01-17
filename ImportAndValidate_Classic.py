@@ -10,9 +10,11 @@ def dynamic_import(module, class_name):
     return getattr(module, class_name)
 
 # Load configuration
-with open('ModelYAMLs/SimpleConfig.yaml', 'r') as file:
+yaml_file = 'ModelYAMLs/CharacterLevelTransformerConfig.yaml'
+with open(yaml_file, 'r') as file:
     config = yaml.safe_load(file)
-
+    print(f"Loading Model: {config['model_identifier']}")
+    
 # Get the tokenizer class from the configuration
 tokenizer_class_name = config['tokenizer']['type']
 dataloader_class_name = config['dataloader']['type']
@@ -58,4 +60,5 @@ DROPOUT = config["dropout"]
 LEARNING_RATE = config["learning_rate"]
 LR_DECAY = config["lr_decay"]
 EPOCHS = config["num_epochs"]
+IMPORTED_DATSET = config["dataset"]
 
