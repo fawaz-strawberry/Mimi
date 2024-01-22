@@ -61,4 +61,5 @@ LEARNING_RATE = config["learning_rate"]
 LR_DECAY = config["lr_decay"]
 EPOCHS = config["num_epochs"]
 IMPORTED_DATSET = config["dataset"]
-
+TRAIN_SPLIT = config["train_split"]
+VAL_SPLIT = config["val_split"]

@@ -9,6 +9,9 @@ dropout: 0.2
 learning_rate: .0003
 lr_decay: 0.99
 num_epochs: 64
+train_split: 0.8
+val_split: 0.1
+estimation_amt: 1000
 
 dataset: "shakespeare.txt"
 

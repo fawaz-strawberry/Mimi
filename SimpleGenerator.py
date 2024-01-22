@@ -1,11 +1,12 @@
 import torch
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, DataLoader, random_split
 import torch.nn.functional as F
 import os
 import time
 from ImportAndValidate_Classic import TokenizerClass, DatasetLoaderClass, Embedding0Class, \
     Embedding1Class, ArchitectureClass, tokenizer_file, tokenized_data, BATCH_SIZE, CONTEXT_LEN, \
-    EMBEDDING_SIZE, HEADS, DROPOUT, MODEL_NAME, LEARNING_RATE, LR_DECAY, EPOCHS, IMPORTED_DATSET
+    EMBEDDING_SIZE, HEADS, DROPOUT, MODEL_NAME, LEARNING_RATE, LR_DECAY, EPOCHS, IMPORTED_DATSET, \
+    TRAIN_SPLIT, VAL_SPLIT
 
 # Create a test input function to test the model and monitor outputs
 def test_input():
@@ -28,6 +29,20 @@ def test_input():
 
     print("\n")
 
+@torch.no_grad()
+def estimateLoss(dataloader, numberIterations=500):
+    sumLoss = 0
+    for i in range(numberIterations):
+        x, y = next(iter(dataloader))
+        x = x.to(device)
+        y = y.to(device)
+        x = semantic_embedding(x)
+        x = position_embedding(x)
+        output = model(x)
+        sumLoss += F.cross_entropy(output.view(-1, tokenizer.num_tokens), y.view(-1))
+    loss = sumLoss / numberIterations
+    return loss
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print("My device is: " + str(device))
 
@@ -38,13 +53,22 @@ if tokenizer_file and os.path.isfile(tokenizer_file):
 else:
     tokenizer = TokenizerClass() 
 
-
-
 # Check if the tokenized data file exists
 if tokenized_data and os.path.isfile(tokenized_data):
     dataset = DatasetLoaderClass(MODEL_NAME, tokenized_data, is_multi_line=False, context_len=CONTEXT_LEN, tokenizer=tokenizer)
 else:
     dataset = DatasetLoaderClass(MODEL_NAME, IMPORTED_DATSET, is_multi_line=False, context_len=CONTEXT_LEN, tokenizer=tokenizer)
+
+# Define the sizes for train, validation, and test sets
+train_size = int(TRAIN_SPLIT * len(dataset))
+val_size = int(VAL_SPLIT * len(dataset))
+test_size = len(dataset) - train_size - val_size
+
+train_dataset, val_dataset, test_dataset = random_split(dataset, [train_size, val_size, test_size])
+
+print(f"\nTrain Size: {train_size}")
+print(f"Val Size: {val_size}")
+print(f"Test Size: {test_size}\n")
 
 # Test the tokenzier
 text = "Hello, World!"
@@ -54,7 +78,9 @@ untokenized = tokenizer.untokenize(tokens)
 print(f"Untokenized: {untokenized}")
 
 # Load in the dataset
-dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
+train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
+val_dataloader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True)
+test_dataloader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=True)
 
 # Instantiate the model, position embedding, and semantic embedding
 position_embedding = Embedding0Class(BATCH_SIZE, EMBEDDING_SIZE, CONTEXT_LEN)
@@ -75,7 +101,7 @@ train_start_time = int(time.time())
 # Create training loop
 for epoch in range(EPOCHS):
 
-    for batch in dataloader:
+    for batch in train_dataloader:
 
         x, y = batch
 
@@ -101,11 +127,20 @@ for epoch in range(EPOCHS):
         # Print loss
         if train_count % 100 == 0:
             learning_rate = LEARNING_RATE * (LR_DECAY ** (train_count // 1000))
-            print(f"Loss: {loss} at {train_count} with lr={learning_rate}")
-            optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-            test_input()
+            optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)            
         if train_count % 1000 == 0 and train_count != 0:
+            print(f"Train Loss: {estimateLoss(train_dataloader)} and Val Loss: {estimateLoss(val_dataloader)} at {train_count} with lr={learning_rate}")
+            test_input()
             os.makedirs("Checkpoints/" + MODEL_NAME, exist_ok=True)
             torch.save(model.state_dict(), f"Checkpoints/{MODEL_NAME}/{MODEL_NAME}_{train_start_time}_{train_count}.pt")
 
         train_count += 1
+
+# Save the model
+torch.save(model.state_dict(), f"Checkpoints/{MODEL_NAME}/{MODEL_NAME}_{train_start_time}_{train_count}.pt")
+print(f"Model saved to Checkpoints/{MODEL_NAME}/{MODEL_NAME}_{train_start_time}_{train_count}.pt")
+print(f"Total Training Time: {int(time.time()) - train_start_time} seconds")
+
+# Calculate Test Loss
+test_loss = estimateLoss(test_dataloader, len(test_dataloader))
+print(f"Test Loss: {test_loss}")

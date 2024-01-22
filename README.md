@@ -1,27 +1,30 @@
-Fancy Schmancy Super AGI
+# Fancy Schmancy Super AGI
+Mimi is a framework for generating continually better AI models. It consists of several components:
 
-Mimi is not just a single AI, but rather a process to generate continually better AI models
+## Config YAMLS
+Config YAMLs are used to provide necessary information for any model to be used by the training files. These YAMLs contain information such as the number of context, number of predictions, number of attention mechanisms, and more.
 
-Config JSONs will be used to provide the neccessary information for any model to be taken in
-by the training files as it should provide information such as
-num_context
-num_predictions
-num_attention_mechs
-.... so on as I learn
 
-pre_training.py will be a file to do the bare minimum and train a next token predictor on any
-given dataset. Arguments should include the model to train and the dataset to train on.
+## INPUTS
+- Dataset: The set of data you want to train on
+- DatasetLoader: How the data will be accessed and then obtained
+- Preprocessing: Run any preprocessing steps such as tokenization of the examples, or pre-embeddings
+- Model: The model to actually process the data
+- Loss: The method to calculate the loss based on the expected outcome
+- Optimizer: The optimizer to step in the right direction, this is influenced by the learning rate.
 
-fine_tuning.py will be used to fine tune a model on a certain (typically smaller dataset) through
-similar methods as pretraining but better designed to get responses out like GPT
 
-generate.py will take in an input in the form of a string or file, along with the model to use,
-and output a response within a max length.
+## pre_training.py
+`pre_training.py` is a file that performs the bare minimum training of a next token predictor on a given dataset. It takes arguments such as the model to train and the dataset to train on.
 
-models/model_x.py will be a folder to hold the hopefully many different architectural models that 
-I plan on training on. The point of this is to make it as easy as possible to build different archs
-and train/test them.
+## fine_tuning.py
+`fine_tuning.py` is used to fine-tune a model on a smaller dataset. It employs similar methods as pre-training but is better designed to generate responses, such as with GPT.
 
-artifacts/artifact_x.xxx will be a folder to hold the artifacts in order to get a model to run, this should
-be handled by the config JSONs as to which model goes where. Our training python scripts should modify the
-configs to represent the latest ckpts of such models 
+## generate.py
+`generate.py` takes an input in the form of a string or file, along with the model to use, and outputs a response within a maximum length.
+
+## models/model_x.py
+`models/model_x.py` is a folder that holds different architectural models that can be trained and tested. The purpose of this folder is to make it easy to build and experiment with different architectures.
+
+## artifacts/artifact_x.xxx
+`artifacts/artifact_x.xxx` is a folder that holds the artifacts required to run a model. The configuration YAMLs specify which model goes where. The training Python scripts should update the configs to represent the latest checkpoints of the models.

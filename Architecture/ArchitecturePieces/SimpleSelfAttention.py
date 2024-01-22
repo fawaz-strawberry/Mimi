@@ -21,6 +21,7 @@ class SelfAttention(nn.Module):
         self.key = nn.Linear(self.embed_size, self.embed_size, bias=False).to(device)
         self.value = nn.Linear(self.embed_size, self.embed_size, bias=False).to(device)
         self.fc_out = nn.Linear(self.head_dim * heads, embed_size).to(device)
+        self.dropout = nn.Dropout(0.1).to(device)
 
     '''
     query: input to the query linear layer
@@ -66,6 +67,7 @@ class SelfAttention(nn.Module):
 
         # Softmax the attention scores
         attention = torch.softmax(attention_scores, dim=-1)
+        attention = self.dropout(attention)
         # Multiply the attention scores with the value
         x = torch.matmul(attention, value)
 
@@ -76,7 +78,7 @@ class SelfAttention(nn.Module):
 
         # Pass the x through the fc_out layer
         x = self.fc_out(x)
-
+        x = self.dropout(x)
         return x
         
 
