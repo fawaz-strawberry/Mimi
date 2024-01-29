@@ -9,6 +9,7 @@ from ImportAndValidate_Classic import TokenizerClass, DatasetLoaderClass, Embedd
     TRAIN_SPLIT, VAL_SPLIT
 
 # Create a test input function to test the model and monitor outputs
+@torch.no_grad()
 def test_input():
     # Print a sample of the next 30 tokens output based on some input
     input_text = "This is a test"

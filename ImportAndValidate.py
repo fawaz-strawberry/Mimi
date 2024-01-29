@@ -47,7 +47,13 @@ for epoch in range(config["TRAINING_PARAMS"]["NUM_EPOCHS"]):
         print(chunk[:100])
         print("\n\n")
 
-        # Tokenize Portioned Dataset
+        # LOSER IDEOLOGY --> Tokenize Portioned Dataset
+        # TURN EVERYTHING INTO BYTES AND PREDICT BYTES!!!!
+        # Convert chunk into bytes
+
+        chunk = chunk.encode('utf-8')
+
+        # Pull in byte tokenizer?  
 
         # Create a dataset loader based on the PD
     
