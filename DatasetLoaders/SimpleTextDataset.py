@@ -1,7 +1,7 @@
 import os
 import torch
 import pickle
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 from .AbstractDatasetLoader import AbstractDatasetLoader
 
 class SimpleTextDataset(AbstractDatasetLoader, Dataset):
@@ -29,10 +29,13 @@ class SimpleTextDataset(AbstractDatasetLoader, Dataset):
                     self.data = f.read()
 
             # Print sample data
-            print(f"Sample Data: {self.data[:100]}")
+            print(f"Sample Data: {self.data[:10]}")
 
-            tokenizer.fit(model_name, self.data)
-            tokenized_characters = tokenizer.tokenize(self.data)
+            tokenized_characters = (tokenizer.tokenize([self.data], return_tensor=False))[0]
+
+            print(f"Sample Tokens: {tokenized_characters[:10]}")
+
+            # exit()
 
             # Split the tokenized data into chunks of size context_len
             for i in range(0, len(tokenized_characters), self.context_len + 1):
@@ -40,6 +43,9 @@ class SimpleTextDataset(AbstractDatasetLoader, Dataset):
                 if len(my_chunk) == self.context_len + 1:
                     self.chunks.append(tokenized_characters[i:i + self.context_len + 1])
 
+            print(f"Sample Chunk: {self.chunks[0]}")
+            print(self.chunks[:10])
+            print(f"Lenght of chunks: {len(self.chunks)}")
 
             # Save the tokenized data to a file
             os.makedirs("Pickels/" + model_name, exist_ok=True)   

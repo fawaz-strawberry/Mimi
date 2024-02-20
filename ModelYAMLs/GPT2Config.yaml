@@ -1,5 +1,8 @@
 MODEL: "GPT2"
 
+MODEL_SETUP:
+  ARCHITECTURE: "Char2ByteDecoder"
+
 MODEL_PARAMS:
   NUM_HEADS: 12
   NUM_LAYERS: 12
@@ -18,13 +21,10 @@ TRAINING_PARAMS:
   NUM_EPOCHS: 3
   ESTIMATION_AMT: 1000
 
-DATASET: "shakespeare.txt"
+DATASET: "Datasets/shakespeare.txt"
+DATASET_LOADER: "SimpleTextDataset"
 
-PREPROCESSING:
-  TOKENIZER: "SingleLetterTokenizer"
-
-MODEL_SETUP:
-  ARCHITECTURE: "SimpleDecoder"
+TOKENIZER: "SingleLetterTokenizer"
 
 LOSS: "CrossEntropyLoss"
 OPTIMIZER: "Adam"
